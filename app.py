@@ -11,25 +11,17 @@ import language_tool_python
 class GrammarRequest(BaseModel):
     text: str
 
+class UpdateNoteRequest(BaseModel):
+    content: str
 
+class RenameNoteRequest(BaseModel):
+    new_name: str
 
 app = FastAPI()
 
 
 @app.get("/")
 def home():
-
-    
-    # matches = tool.check(text)
-    # match = matches[0]
-
-    # print(match.message)
-    # print(match.replacements)
-    # print(match.rule_id)
-    # print(match.matched_text)
-
-    
-
     return {"message": "Welcome to the FastAPI Note Taking Application!"}
 
 
@@ -103,6 +95,44 @@ def check_grammar(text: str):
             "matched_text": match.matched_text
         })
     return errors
+
+@app.get("/search")
+def search_notes(query: str):
+    results = []
+    for filename in os.listdir("uploads"):
+        if filename.endswith(".md"):
+            with open(f"uploads/{filename}", "r",encoding="utf-8-sig") as f:
+                text = f.read()
+                print(text)
+                if query.lower() in text.lower():
+                    results.append(filename)
+    return {"query": query, "results": results}
+    
+
+@app.put("/notes/{note_name}")
+def update_note(request: UpdateNoteRequest, note_name: str):
+    if(os.path.exists(f"uploads/{note_name}")==False):
+        raise HTTPException(status_code=404, detail="Note not found")
+    if(request.content.strip()==""):
+        raise HTTPException(status_code=400, detail="Note content cannot be empty")
+    with open(f"uploads/{note_name}","w",encoding="utf-8-sig") as f:
+        f.write(request.content)
+    return {"message": f"{note_name} updated successfully!"}
+
+@app.patch("/note/{note_name}/rename")
+def rename_note(request:RenameNoteRequest,note_name:str):
+    if(os.path.isfile(f"uploads/{note_name}")==False):
+        raise HTTPException(status_code=404,detail="Note not found")
+    
+    if(request.new_name.strip()==""):
+        raise HTTPException(status_code=400,detail="New name cannot be empty")
+
+    new_name=request.new_name.strip()
+    if(os.path.isfile(f"uploads/{new_name}")==True):
+        raise HTTPException(status_code=400,detail="A note with the new name already exists")
+
+    os.rename(f"uploads/{note_name}",f"uploads/{new_name}")
+    return {"message": f"{note_name} renamed to {new_name} successfully!"}
 
 
 
