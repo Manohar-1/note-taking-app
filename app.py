@@ -1,6 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse
 from utils import check_grammar
+from services import create_note_service
 
 import os 
 import markdown 
@@ -19,17 +20,7 @@ def home():
 
 @app.post("/notes")
 def create_note(note: Note):
-    if(note.title.strip()==""):
-        raise HTTPException(status_code=400, detail="Title cannot be empty")
-    
-    filename = f"{note.title.strip()}.md"
-
-    if(os.path.exists(f"uploads/{filename}")==True):
-        raise HTTPException(status_code=400, detail="Note with this name already exists")
-    
-    with open(f"uploads/{filename}","w",encoding="utf-8-sig") as f:
-        f.write(note.content)
-    return {"message": f"{filename} created successfully!"}
+    return create_note_service(note)
 
 @app.post("/upload")
 async def upload_note(file:UploadFile = File(...)):
