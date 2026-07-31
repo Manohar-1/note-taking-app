@@ -1,3 +1,6 @@
+# Introduction
+A simple note taking app project using Python and FastAPI. This app has grammar-checking feature
+
 # Project Structure
 ## note-taking-app/ 
 
@@ -28,7 +31,6 @@
 └── .gitignore
 
 
-# Note-Taking-App
-a simple note taking app project, from roadmap.sh website
+
 # Licence
 https://roadmap.sh/projects/markdown-note-taking-app
